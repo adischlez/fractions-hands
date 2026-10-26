@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>שברים בידיים · תרגול אינטראקטיבי</title>
+<style>
+:root{--bg:#f5f4f0;--card:#fff;--ink:#1c2230;--mute:#667085;--line:#d9d6cc;--a:#f0a531;--a2:#c98410;--b:#2b9c8e;--b2:#1d7368;--bad:#d9534f;--good:#2f8f4e;--hl:#fff4dc;--r:14px}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;-webkit-text-size-adjust:100%}
+body{padding:0 0 40px}
+header{position:sticky;top:0;z-index:20;background:rgba(245,244,240,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.hwrap{max-width:760px;margin:0 auto;padding:10px 14px 0}
+h1{font-size:19px;margin:0 0 8px;font-weight:750;letter-spacing:-.2px}
+h1 small{font-weight:500;color:var(--mute);font-size:13px;margin-inline-start:6px}
+nav{display:flex;gap:6px}
+nav button{flex:1;border:0;background:transparent;padding:10px 4px 11px;font:600 15px system-ui,-apple-system,sans-serif;color:var(--mute);border-bottom:3px solid transparent;cursor:pointer;min-height:44px}
+nav button[aria-selected=true]{color:var(--ink);border-color:var(--ink)}
+main{max-width:760px;margin:0 auto;padding:12px 14px}
+section.view{display:none}section.view.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin:0 0 12px}
+.card h2{font-size:16px;margin:0 0 4px}
+.sub{color:var(--mute);font-size:14px;margin:0 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 4px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;min-height:40px;font:600 15px system-ui,-apple-system,sans-serif;color:var(--ink);cursor:pointer;direction:ltr}
+.chip[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn{border:1px solid var(--ink);background:#fff;color:var(--ink);border-radius:10px;padding:8px 14px;min-height:44px;min-width:44px;font:650 15px system-ui,-apple-system,sans-serif;cursor:pointer}
+.btn.pri{background:var(--ink);color:#fff}
+.btn:disabled{opacity:.35;cursor:default}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cutbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:8px 0 2px;font-size:14px;color:var(--mute)}
+.cutbar .btn{min-width:46px;padding:6px 10px;font-size:15px}
+.cutbar .btn.k{border-color:var(--line)}
+/* strips */
+.stripbox{margin:8px 0 4px}
+.slabel{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:14px;color:var(--mute);margin:0 2px 4px}
+.slabel b{color:var(--ink);font-size:15px}
+.strip{direction:ltr;display:flex;height:58px;border:2px solid var(--ink);border-radius:8px;overflow:hidden;background:#fff;position:relative;touch-action:none;user-select:none;-webkit-user-select:none}
+.strip.short{height:46px}
+.cell{flex:1 1 0;border-left:1px solid #9aa0ab;position:relative;display:flex;align-items:center;justify-content:center;font:600 12px system-ui,sans-serif;color:rgba(0,0,0,.55);transition:background .25s}
+.cell:first-child{border-left:0}
+.cell.wb{border-left:3px solid var(--ink)}
+.cell.A{background:var(--a)}
+.cell.B{background:var(--b);color:rgba(255,255,255,.8)}
+.cell.gone{background:repeating-linear-gradient(135deg,#fff 0 6px,#f3efe4 6px 12px)}
+.cell.drag{cursor:grab}
+.cell.drag:active{cursor:grabbing}
+.cell.W{background:repeating-linear-gradient(135deg,#f6c9c7 0 6px,#efb0ad 6px 12px)}
+.cell.tgt{box-shadow:inset 0 0 0 3px var(--ink)}
+.cell.new{animation:pop .35s ease-out}
+.strip.nope{animation:shake .4s;border-color:var(--bad)}
+.strip.okdrop{box-shadow:0 0 0 4px rgba(43,156,142,.25)}
+.strip.whole{box-shadow:0 0 0 4px rgba(47,143,78,.3);border-color:var(--good)}
+@keyframes pop{0%{transform:scaleY(.6);filter:brightness(1.2)}100%{transform:none}}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.cell.cutin{animation:cutin .45s ease-out}
+@keyframes cutin{0%{border-left-color:transparent}100%{}}
+.ghost{position:fixed;z-index:99;pointer-events:none;background:var(--a);border:2px solid var(--a2);border-radius:6px;box-shadow:0 10px 24px rgba(0,0,0,.25);transform:translate(-50%,-60%) scale(1.06)}
+.combo{direction:ltr;display:flex;height:40px;border:2px solid var(--ink);border-radius:8px;overflow:hidden;background:#fff}
+.combo>div{border-left:1px solid rgba(0,0,0,.35)}.combo>div:first-child{border-left:0}
+/* fractions */
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.05;margin:0 2px;font-weight:700;direction:ltr}
+.fr>span:first-child{border-bottom:2px solid currentColor;padding:0 3px}
+.fr>span{padding:0 3px}
+.eq{direction:ltr;unicode-bidi:isolate;display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:20px;font-weight:650}
+.eq .op{font-weight:500;color:var(--mute)}
+.fin{display:inline-flex;flex-direction:column;align-items:center;gap:3px;vertical-align:middle}
+.fin input,.nin{width:52px;height:46px;border:2px solid #b8b3a6;border-radius:9px;text-align:center;font:700 21px system-ui,-apple-system,sans-serif;color:var(--ink);background:#fffdf7;direction:ltr}
+.fin .bar{width:56px;height:2px;background:var(--ink)}
+input:focus{outline:none;border-color:var(--ink);box-shadow:0 0 0 3px rgba(28,34,48,.15)}
+input.ok{border-color:var(--good);background:#eef8f0}
+input.bad{border-color:var(--bad);background:#fdf0ef}
+/* notebook */
+.nb{background:#fffdf7 repeating-linear-gradient(#fffdf7 0 33px,#e8edf5 33px 34px);border:1px solid #e5dfcf;border-radius:var(--r);padding:12px 14px}
+.step{padding:10px 0;border-bottom:1px dashed #e0d9c6}
+.step:last-child{border-bottom:0}
+.step .n{font-size:13px;color:var(--mute);font-weight:650;margin-bottom:4px}
+.step.locked{opacity:.35;pointer-events:none}
+.fb{font-size:15px;margin-top:6px;min-height:0;border-radius:9px}
+.fb:empty{display:none}
+.fb.ok{color:#1f6b38;background:#eef8f0;padding:8px 10px}
+.fb.bad{color:#8a2a26;background:#fdf0ef;padding:8px 10px}
+.fb.info{color:#5a4a1e;background:var(--hl);padding:8px 10px}
+.hint{font-size:15px;background:var(--hl);border-radius:10px;padding:9px 11px;margin:8px 0;color:#5a4a1e}
+.hint:empty{display:none}
+.hint.warn{background:#fdf0ef;color:#8a2a26}
+.hint.good{background:#eef8f0;color:#1f6b38}
+.cmp{border:1px solid #efc6c3;background:#fffafa;border-radius:12px;padding:10px;margin-top:8px}
+.cmp:empty{display:none}
+.nl{display:block;width:100%;height:auto;margin-top:6px;direction:ltr}
+.why{font-size:15px;color:#334;margin-top:6px}
+.big{font-size:22px}
+.found{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.found span{background:#eef8f0;color:#1f6b38;border-radius:999px;padding:3px 10px;font-weight:650;direction:ltr}
+.stepper{display:inline-flex;flex-direction:column;align-items:center;gap:4px}
+.stepper .btn{min-height:40px;width:56px;padding:0;font-size:20px;line-height:1}
+.stepper output{font:700 22px system-ui,sans-serif;width:56px;text-align:center}
+.sbfr{display:inline-flex;flex-direction:column;align-items:center}
+.sbfr .ln{width:60px;height:2px;background:var(--ink);margin:2px 0}
+.sbrow{direction:ltr;display:flex;align-items:center;justify-content:center;gap:16px;margin:6px 0}
+details.parent{margin-top:16px;font-size:14px;color:#3b4252}
+details.parent summary{cursor:pointer;font-weight:650;padding:6px 0;min-height:40px}
+.legend{display:flex;gap:12px;font-size:13px;color:var(--mute);flex-wrap:wrap}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-inline-end:4px}
+@media (min-width:700px){.strip{height:66px}.card{padding:18px}}
+
+@media (min-width:1000px){
+ main{max-width:1240px}
+ .hwrap{max-width:1240px}
+ nav{max-width:560px}
+ #v-eq.on{display:grid;grid-template-columns:1fr 1fr;gap:0 16px;align-items:start}
+ #v-eq.on>.card:nth-child(1){grid-column:1;grid-row:1}
+ #v-eq.on>.card:nth-child(2){grid-column:1;grid-row:2}
+ #v-eq.on>.card:nth-child(3){grid-column:2;grid-row:1/span 2;position:sticky;top:110px}
+ .addgrid{display:grid;grid-template-columns:1.15fr 1fr;gap:0 16px;align-items:start}
+ .addgrid>.card:first-child{position:sticky;top:110px}
+ details.parent{max-width:760px}
+}
+@media (min-width:700px) and (max-width:999px){main{max-width:820px}.hwrap{max-width:820px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header><div class="hwrap">
+<h1>שברים בידיים <small>תרגול למיפוי · כיתה ה׳</small></h1>
+<nav role="tablist">
+<button role="tab" data-v="eq" aria-selected="true">שברים שווים</button>
+<button role="tab" data-v="add" aria-selected="false">חיבור שברים</button>
+<button role="tab" data-v="sb" aria-selected="false">ארגז חול</button>
+</nav></div></header>
+<main>
+
+<!-- ============ EQUIVALENT ============ -->
+<section class="view on" id="v-eq">
+ <div class="card">
+  <h2>אותה כמות, שם אחר</h2>
+  <p class="sub">חתכו את הרצועה לחלקים קטנים יותר (או הקישו על חלק) – וראו איך השבר מקבל שם חדש.</p>
+  <div class="chips" id="eqTargets"></div>
+  <div class="stripbox">
+   <div class="slabel"><span>רצועת המטרה</span><b id="eqTLabel"></b></div>
+   <div class="strip" id="eqT"></div>
+  </div>
+  <div class="cutbar">חתכו כל חלק ל־
+   <button class="btn k" data-k="2">2</button><button class="btn k" data-k="3">3</button><button class="btn k" data-k="4">4</button>
+   <button class="btn k" data-k="1" title="בטל חיתוך">↺</button>
+  </div>
+  <div class="hint" id="eqCutMsg"></div>
+ </div>
+
+ <div class="card">
+  <h2>השבר שלי</h2>
+  <p class="sub">כתבו מונה ומכנה – הרצועה נצבעת מיד, ממש מתחת לרצועת המטרה.</p>
+  <div class="row" style="gap:14px">
+   <span class="fin"><input id="eqN" inputmode="numeric" maxlength="2" aria-label="מונה" value="4"><span class="bar"></span><input id="eqD" inputmode="numeric" maxlength="2" aria-label="מכנה" value="6"></span>
+   <div id="eqVerdict" class="big" style="flex:1"></div>
+  </div>
+  <div class="stripbox">
+   <div class="slabel"><span>רצועת המטרה</span><b id="eqTLabel2"></b></div>
+   <div class="strip short" id="eqT2"></div>
+  </div>
+  <div class="stripbox">
+   <div class="slabel"><span>השבר שלי</span><b id="eqMLabel"></b></div>
+   <div class="strip short" id="eqM"></div>
+  </div>
+  <svg class="nl" id="eqNL" viewBox="0 0 500 92"></svg>
+  <div class="why" id="eqWhy"></div>
+ </div>
+
+ <div class="card">
+  <h2>מחברת: השלימו</h2>
+  <p class="sub">כשתשובה נכונה, רצועת המטרה נחתכת בעצמה כדי להראות למה.</p>
+  <div class="nb" id="eqNB"></div>
+  <div class="found" id="eqFound"></div>
+ </div>
+</section>
+
+<!-- ============ ADD ============ -->
+<section class="view" id="v-add">
+ <div class="card">
+  <h2>חיבור שברים – מזיזים חתיכות</h2>
+  <p class="sub">גררו (או הקישו על) חתיכה כתומה למעלה אל משבצת ריקה ברצועה התחתונה.</p>
+  <div class="chips" id="addProbs"></div>
+ </div>
+ <div id="addRoot"></div>
+</section>
+
+<!-- ============ SANDBOX ============ -->
+<section class="view" id="v-sb">
+ <div class="card">
+  <h2>ארגז חול</h2>
+  <p class="sub">בחרו כל שני שברים ושחקו איתם.</p>
+  <div class="sbrow" id="sbPick"></div>
+  <div class="row" style="justify-content:center"><button class="btn" id="sbRand">תרגיל אקראי</button><button class="btn pri" id="sbGo">יאללה</button></div>
+  <div class="hint" id="sbMsg"></div>
+ </div>
+ <div id="sbRoot"></div>
+</section>
+
+<details class="parent"><summary>להורים: איך להשתמש</summary>
+<p>• מדברים בשפת יחידות: לא "אחת חלקי שלוש" אלא "שליש אחד"; לא "ארבע חלקי שש" אלא "4 שישיות". ואז חיבור הופך לספירה: 2 שישיות ועוד 4 שישיות = 6 שישיות.</p>
+<p>• קודם מזיזים חתיכות, ורק אחר כך כותבים במחברת. אם הילד כותב 5/9, תנו לו להסתכל על הרצועה האדומה – הוא יראה לבד שזה קטן מדי.</p>
+<p>• כמה דקות ביום מספיקות. אין ציונים ואין שעון.</p>
+<p>• פרטיות: לא נשמר כלום על הילד – לא תשובות, לא ציונים ולא שמות. נספרות רק כניסות כלליות, בלי שמות, בלי ציונים ובלי עוגיות.</p>
+</details>
+</main>
+
+<script>
+/* ---------- Anonymous aggregate stats (optional) ----------
+   Empty string = disabled: nothing is loaded and nothing is sent.
+   When set (e.g. 'https://NAME.goatcounter.com/count'), GoatCounter (cookieless)
+   records a pageview plus which activity was opened. Never answers, scores or timing. */
+const GOATCOUNTER_URL = '';
+const Stats=(()=>{const q=[],sent=new Set();let ready=false;
+ function init(){if(!GOATCOUNTER_URL)return;const s=document.createElement('script');s.async=true;s.src='https://gc.zgo.at/count.js';
+  s.setAttribute('data-goatcounter',GOATCOUNTER_URL);s.onload=()=>{ready=true;q.splice(0).forEach(send)};document.head.appendChild(s)}
+ function send(n){try{window.goatcounter&&window.goatcounter.count&&window.goatcounter.count({path:n,title:n,event:true})}catch(e){}}
+ function ev(n){if(!GOATCOUNTER_URL||sent.has(n))return;sent.add(n);ready?send(n):q.push(n)}
+ return {init,ev}})();
+Stats.init();
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const gcd=(a,b)=>b?gcd(b,a%b):a, lcm=(a,b)=>a/gcd(a,b)*b;
+const SING={1:'שלם',2:'חצי',3:'שליש',4:'רבע',5:'חמישית',6:'שישית',7:'שביעית',8:'שמינית',9:'תשיעית',10:'עשירית'};
+const PLUR={1:'שלמים',2:'חצאים',3:'שלישים',4:'רבעים',5:'חמישיות',6:'שישיות',7:'שביעיות',8:'שמיניות',9:'תשיעיות',10:'עשיריות'};
+const plur=d=>PLUR[d]||`חלקים של ${d}`, sing=d=>SING[d]||`חלק אחד מתוך ${d}`;
+const words=(n,d)=>n===1?sing(d):`${n} ${plur(d)}`;
+const B=x=>`<bdi dir="ltr">${x}</bdi>`;
+const F=(n,d)=>`<span class="fr"><span>${n}</span><span>${d}</span></span>`;
+const el=(t,cls,html)=>{const e=document.createElement(t);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e};
+const num=v=>{v=String(v).trim();return /^\d+$/.test(v)?+v:null};
+
+/* Render a uniform strip: slots = array of class names ('' = empty). wholeSize = slots per whole */
+function renderStrip(box,slots,wholeSize,opts={}){
+ box.innerHTML='';slots.forEach((c,i)=>{const d=el('div','cell '+(c||''));d.dataset.slot=i;
+  if(i>0&&i%wholeSize===0)d.classList.add('wb');
+  if(opts.newSet&&opts.newSet.has(i))d.classList.add('new');
+  if(opts.cutin)d.classList.add('cutin');
+  if(opts.drag&&c==='A')d.classList.add('drag');
+  box.appendChild(d)});
+ if(opts.width!=null)box.style.width=opts.width;}
+const fillSlots=(n,d,cls)=>Array.from({length:d},(_,i)=>i<n?cls:'');
+
+/* Number line SVG. W = wholes, den = tick denominator(s), marks [{v,label,col}] */
+function numberLine(svg,W,dens,marks){
+ const X=v=>18+464*v/W;let s=`<line x1="18" y1="52" x2="482" y2="52" stroke="#1c2230" stroke-width="2.5"/>`;
+ dens.forEach((d,k)=>{for(let i=0;i<=W*d;i++){const x=X(i/d);s+=`<line x1="${x}" x2="${x}" y1="${k?52:44}" y2="${k?62:52}" stroke="${k?'#9aa0ab':'#1c2230'}" stroke-width="${k?1.5:2}"/>`}});
+ for(let w=0;w<=W;w++){const x=X(w);s+=`<line x1="${x}" x2="${x}" y1="38" y2="66" stroke="#1c2230" stroke-width="3"/><text x="${x}" y="84" font-size="15" text-anchor="middle" font-weight="700" fill="#1c2230">${w}</text>`}
+ marks.forEach((m,i)=>{const x=X(Math.min(m.v,W));const up=i%2===0;const ty=up?20:20;const dx=marks.length>1&&Math.abs(marks[0].v-marks[1].v)<.06*W?(i?24:-24):0;
+  s+=`<path d="M${x} 50 l-9 -14 h18z" fill="${m.col}"/><text x="${Math.max(28,Math.min(472,x+dx))}" y="${ty}" font-size="15" text-anchor="middle" font-weight="750" fill="${m.col}">${m.label}</text>`});
+ svg.innerHTML=s}
+
+/* ================= EQUIVALENT ================= */
+const EQ={tn:2,td:3,k:1,found:new Set()};
+const EQ_TARGETS=[[2,3],[3,4],[1,2],[2,5]];
+function eqBuildTargets(){const c=$('#eqTargets');c.innerHTML='';EQ_TARGETS.forEach(([n,d])=>{const b=el('button','chip',`${n}/${d}`);b.setAttribute('aria-pressed',n===EQ.tn&&d===EQ.td);
+ b.onclick=()=>{EQ.tn=n;EQ.td=d;EQ.k=1;EQ.found=new Set();$('#eqN').value='';$('#eqD').value='';eqBuildTargets();eqCut(1,true);eqMine();eqNotebook()};c.appendChild(b)})}
+function eqCut(k,silent){const prev=EQ.k;EQ.k=k;const D=EQ.td*k,N=EQ.tn*k;
+ renderStrip($('#eqT'),fillSlots(N,D,'B'),D,{cutin:k!==prev});
+ $('#eqTLabel').innerHTML=`${F(N,D)} · ${words(N,D)}`;
+ const m=$('#eqCutMsg');
+ if(k===1){m.className='hint';m.innerHTML=silent?'':`חזרנו ל־${F(EQ.tn,EQ.td)}.`;if(silent)m.innerHTML=''}
+ else{m.className='hint good';m.innerHTML=`כל ${sing(EQ.td)} נחתך ל־${k} חלקים שווים. עכשיו יש <b>פי ${k}</b> חלקים בשלם (${D}) ו<b>פי ${k}</b> חלקים צבועים (${N}).<br>`+
+  `<span class="eq">${F(EQ.tn,EQ.td)}<span class="op">=</span>${F(N,D)}</span> &nbsp; הכמות הצבועה לא זזה – רק השם שלה השתנה: ${words(EQ.tn,EQ.td)} = ${words(N,D)}.`}
+ document.querySelectorAll('#v-eq .cutbar .btn').forEach(b=>b.classList.toggle('pri',+b.dataset.k===k));
+ eqMine()}
+document.querySelectorAll('#v-eq .cutbar .btn').forEach(b=>b.onclick=()=>eqCut(+b.dataset.k));
+$('#eqT').addEventListener('click',()=>{const nx={1:2,2:3,3:4,4:1}[EQ.k]||1;eqCut(nx)});
+function eqMine(){const n=num($('#eqN').value),d=num($('#eqD').value);const T=EQ.tn/EQ.td;
+ const TD=EQ.td*EQ.k;renderStrip($('#eqT2'),fillSlots(EQ.tn*EQ.k,TD,'B'),TD);$('#eqTLabel2').innerHTML=F(EQ.tn*EQ.k,TD);
+ const V=$('#eqVerdict'),W=$('#eqWhy'),M=$('#eqM');
+ [$('#eqN'),$('#eqD')].forEach(i=>i.classList.remove('ok','bad'));
+ if(n==null||!d){M.innerHTML='';$('#eqMLabel').innerHTML='';V.innerHTML='';W.innerHTML='';numberLine($('#eqNL'),1,[EQ.td],[{v:T,label:`${EQ.tn}/${EQ.td}`,col:'#1d7368'}]);return}
+ if(d>24){V.innerHTML='<span style="font-size:15px;color:#8a2a26">עד 24 חלקים, אחרת לא רואים כלום 🙂</span>';M.innerHTML='';return}
+ if(n>d){V.innerHTML='<span style="font-size:15px;color:#8a2a26">המונה גדול מהמכנה – זה יותר משלם. נסו מונה עד '+d+'.</span>';M.innerHTML='';return}
+ renderStrip(M,fillSlots(n,d,'A'),d);$('#eqMLabel').innerHTML=`${F(n,d)} · ${words(n,d)}`;
+ const v=n/d,same=n*EQ.td===d*EQ.tn;
+ numberLine($('#eqNL'),1,[EQ.td,d],[{v:T,label:`${EQ.tn}/${EQ.td}`,col:'#1d7368'},{v,label:`${n}/${d}`,col:'#c98410'}]);
+ if(same){V.innerHTML=`<span style="color:#1f6b38">✓ שווה!</span>`;$('#eqN').classList.add('ok');$('#eqD').classList.add('ok');
+  const k=d/EQ.td;W.innerHTML=Number.isInteger(k)&&k>1?`הקצה הכתום נגמר בדיוק איפה שהירוק נגמר, ושני החצים על אותה נקודה בישר. ${words(EQ.tn,EQ.td)} = ${words(n,d)}: חתכנו כל ${sing(EQ.td)} ל־${k}, אז גם למעלה וגם למטה כפלנו ב־${k}.`:
+  Number.isInteger(EQ.td/d)&&d<EQ.td?`החלקים שלך גדולים יותר, אבל יש פחות מהם – ובסוף אותה כמות. זה צמצום: ${F(EQ.tn,EQ.td)} = ${F(n,d)}.`:`אותה נקודה בדיוק על הישר – אותה כמות.`;
+  if(n!==EQ.tn||d!==EQ.td){EQ.found.add(n+'/'+d);eqFound()}}
+ else{const bigger=v>T;V.innerHTML=`<span style="color:#8a2a26">${bigger?'גדול יותר ▶':'◀ קטן יותר'}</span>`;
+  W.innerHTML=`הכתום נגמר ${bigger?'אחרי':'לפני'} הירוק, וגם החץ על הישר ${bigger?'ימינה':'שמאלה'} מ־${B(EQ.tn+'/'+EQ.td)}. ${d%EQ.td===0?`רמז: עם ${plur(d)} צריך ${EQ.tn*d/EQ.td} חלקים צבועים.`:`רמז: נסו מכנה שמתחלק ב־${EQ.td}, כמו ${EQ.td*2} או ${EQ.td*3}.`}`}}
+['#eqN','#eqD'].forEach(s=>$(s).addEventListener('input',eqMine));
+function eqFound(){const f=$('#eqFound');f.innerHTML=EQ.found.size?'<span style="background:none;color:#667085;font-weight:500">שברים ששווים ל־'+B(EQ.tn+'/'+EQ.td)+' שמצאת:</span>'+[...EQ.found].map(s=>`<span>${s}</span>`).join(''):''}
+function eqNotebook(){const nb=$('#eqNB');nb.innerHTML='';const ks=[2,3,4];
+ ks.forEach((k,i)=>{const D=EQ.td*k;const st=el('div','step'+(i?' locked':''));st.innerHTML=`<div class="n">תרגיל ${i+1}</div><div class="eq">${F(EQ.tn,EQ.td)}<span class="op">=</span><span class="fin"><input inputmode="numeric" maxlength="2" aria-label="מונה"><span class="bar"></span><span style="font:700 21px system-ui">${D}</span></span></div><div class="fb"></div>`;
+  const inp=st.querySelector('input'),fb=st.querySelector('.fb');
+  inp.addEventListener('input',()=>{const v=num(inp.value);inp.classList.remove('ok','bad');fb.className='fb';fb.innerHTML='';if(v==null)return;
+   if(v===EQ.tn*k){inp.classList.add('ok');fb.className='fb ok';fb.innerHTML=`✓ כל ${sing(EQ.td)} נחתך ל־${k} ${plur(D)}, אז ${words(EQ.tn,EQ.td)} = ${words(v,D)}. (תסתכלו למעלה – הרצועה נחתכה.)`;
+    eqCut(k);EQ.found.add(v+'/'+D);eqFound();const nx=st.nextElementSibling;if(nx)nx.classList.remove('locked')}
+   else{inp.classList.add('bad');fb.className='fb bad';fb.innerHTML=v===EQ.tn+(D-EQ.td)?`הוספת ${D-EQ.td} גם למעלה וגם למטה – אבל בשברים לא מוסיפים, <b>חותכים</b>. כל ${sing(EQ.td)} נחתך ל־${k}, אז יש פי ${k} חלקים צבועים.`:
+    `לא בדיוק. בכמה חלקים נחתך כל ${sing(EQ.td)} כדי לקבל ${plur(D)}? ${B(`(${D} ÷ ${EQ.td} = ?)`)} – באותו מספר כופלים את המונה.`}});
+  nb.appendChild(st)})}
+
+/* ================= ADD (reusable view) ================= */
+function AddView(root,cfg){
+ const S={};let cuts=cfg.cuts||[2,3,4];
+ root.className='addgrid';root.innerHTML=`
+ <div class="card">
+  <div class="row" style="justify-content:space-between"><div class="eq big" data-r="title"></div><button class="btn" data-r="reset">התחילו מחדש</button></div>
+  <div class="legend" style="margin-top:6px"><span><i style="background:var(--a)"></i>המחובר הראשון</span><span><i style="background:var(--b)"></i>המחובר השני</span></div>
+  <div class="stripbox"><div class="slabel"><span>למעלה: מזיזים מכאן</span><b data-r="topL"></b></div><div class="strip" data-r="top"></div>
+   <div class="cutbar">חתכו כל חלק ל־<span data-r="cutA"></span></div></div>
+  <div class="stripbox" style="margin-top:14px"><div class="slabel"><span>למטה: רצועת התשובה</span><b data-r="ansL"></b></div><div class="strip" data-r="ans"></div>
+   <div class="cutbar">חתכו כל חלק ל־<span data-r="cutB"></span></div></div>
+  <div class="hint" data-r="hint"></div>
+ </div>
+ <div class="card"><h2>במחברת</h2><p class="sub">כותבים כמו במחברת, שלב אחרי שלב. כל שלב נבדק מיד.</p><div class="nb" data-r="nb"></div><div class="cmp" data-r="cmp"></div></div>`;
+ const R=n=>root.querySelector(`[data-r="${n}"]`);
+ const top=R('top'),ans=R('ans'),hint=R('hint');
+ function setHint(t,c=''){hint.className='hint '+c;hint.innerHTML=t}
+ function load(a,b,c,d){Object.assign(S,{a,b,c,d,kA:1,kB:1,W:Math.max(1,Math.ceil(a/b+c/d-1e-9))});
+  S.top=fillSlots(a,b,'A');S.ans=Array.from({length:S.W*d},(_,i)=>i<c?'B':'');S.newSet=null;S.done=false;
+  R('title').innerHTML=`${F(a,b)}<span class="op">+</span>${F(c,d)}`;
+  ['cutA','cutB'].forEach(id=>{const box=R(id);box.innerHTML='';cuts.forEach(k=>{const bt=el('button','btn k',String(k));bt.onclick=()=>cut(id==='cutA'?'A':'B',k);box.appendChild(bt)})});
+  if(b===d)setHint(`החתיכות באותו גודל – ${plur(b)} למעלה ו${plur(d)} למטה. גררו כל חתיכה כתומה למשבצת ריקה.`);
+  else setHint(`שימו לב: למעלה ${plur(b)}, למטה ${plur(d)}. נסו לגרור ותראו מה קורה…`);
+  draw();notebook();R('cmp').innerHTML=''}
+ R('reset').onclick=()=>load(S.a,S.b,S.c,S.d);
+ const uA=()=>S.b*S.kA,uB=()=>S.d*S.kB,same=()=>uA()===uB();
+ function cut(which,k){
+  if(which==='A'){if(uA()*k>24)return setHint('החתיכות יהיו קטנות מדי. נסו מספר קטן יותר, או התחילו מחדש.','warn');S.top=S.top.flatMap(s=>Array(k).fill(s));S.kA*=k}
+  else{if(uB()*k*S.W>36||uB()*k>24)return setHint('החתיכות יהיו קטנות מדי. נסו מספר קטן יותר, או התחילו מחדש.','warn');S.ans=S.ans.flatMap(s=>Array(k).fill(s));S.kB*=k}
+  const D=which==='A'?uA():uB(),o=which==='A'?S.b*S.kA/k:S.d*S.kB/k;
+  let t=`חתכנו כל ${sing(o)} ל־${k}: עכשיו ${which==='A'?'למעלה':'למטה'} יש ${plur(D)}.`;
+  if(same())t+=` <b>עכשיו כל החתיכות באותו גודל</b> – אפשר להזיז!`;else t+=` למעלה ${plur(uA())}, למטה ${plur(uB())} – עוד לא אותו גודל.`;
+  setHint(t,same()?'good':'');draw(true)}
+ function draw(cutin){
+  const per=S.W;const wPct=100/per;
+  renderStrip(top,S.top,uA(),{drag:true,cutin});top.style.width=`calc(${wPct}% )`;
+  renderStrip(ans,S.ans,uB(),{newSet:S.newSet,cutin});S.newSet=null;
+  const nA=S.top.filter(s=>s==='A').length,mv=S.ans.filter(s=>s==='A').length,nB=S.ans.filter(s=>s==='B').length;
+  R('topL').innerHTML=nA?`${F(nA,uA())} · ${words(nA,uA())}`:'ריק';
+  const tot=mv+nB;R('ansL').innerHTML=mv?`${words(nB,uB())} + ${words(mv,uB())} = <span dir="ltr">${F(tot,uB())}</span>`:`${F(nB,uB())} · ${words(nB,uB())}`;
+  ans.classList.toggle('whole',tot>0&&tot%uB()===0&&mv>0);
+  root.querySelectorAll('.cutbar .btn').forEach(b=>b.disabled=false);
+  if(!nA&&!S.done){S.done=true;const D=uB();let t=`כל החתיכות עברו! ${words(nB,D)} ועוד ${words(mv,D)} = <b>${words(tot,D)}</b>. החתיכות לא נהיו קטנות יותר כשחיברנו – לכן המכנה נשאר ${D}.`;
+   if(tot%D===0)t+=` ${words(tot,D)} = ${tot/D===1?'שלם אחד':tot/D+' שלמים'}! ✓`;setHint(t,'good')}}
+ function move(i,target){
+  if(S.top[i]!=='A')return false;
+  if(!same()){setHint(`היחידות בגודל שונה – קודם חתכו לחלקים שווים. (למעלה ${plur(uA())}, למטה ${plur(uB())}.)`,'warn');ans.classList.remove('nope');void ans.offsetWidth;ans.classList.add('nope');setTimeout(()=>ans.classList.remove('nope'),900);return false}
+  let j=target!=null&&S.ans[target]===''?target:S.ans.indexOf('');if(j<0){setHint('אין מקום ברצועה.','warn');return false}
+  S.top[i]='gone';S.ans[j]='A';S.newSet=new Set([j]);if(!S.done&&S.top.includes('A'))setHint(`יפה. עוד ${words(S.top.filter(s=>s==='A').length,uA())} להזיז.`,'good');draw();return true}
+ /* pointer drag (mouse + touch) */
+ let drag=null;
+ top.addEventListener('pointerdown',e=>{const c=e.target.closest('.cell');if(!c||!c.classList.contains('A'))return;e.preventDefault();
+  const r=c.getBoundingClientRect();const g=el('div','ghost');g.style.width=r.width+'px';g.style.height=r.height+'px';g.style.left=e.clientX+'px';g.style.top=e.clientY+'px';
+  drag={i:+c.dataset.slot,x0:e.clientX,y0:e.clientY,g,moved:false,src:c,id:e.pointerId};try{top.setPointerCapture(e.pointerId)}catch(_){}});
+ top.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;const dx=e.clientX-drag.x0,dy=e.clientY-drag.y0;
+  if(!drag.moved&&Math.hypot(dx,dy)>6){drag.moved=true;document.body.appendChild(drag.g);drag.src.classList.add('gone');drag.src.classList.remove('A')}
+  if(!drag.moved)return;drag.g.style.left=e.clientX+'px';drag.g.style.top=e.clientY+'px';
+  ans.querySelectorAll('.tgt').forEach(x=>x.classList.remove('tgt'));const t=slotAt(e.clientX,e.clientY);
+  ans.classList.toggle('okdrop',!!t&&same());if(t&&same()){const j=S.ans[+t.dataset.slot]===''?+t.dataset.slot:S.ans.indexOf('');const tc=ans.children[j];tc&&tc.classList.add('tgt')}});
+ function slotAt(x,y){const r=ans.getBoundingClientRect();if(y<r.top-30||y>r.bottom+30||x<r.left-10||x>r.right+10)return null;
+  const n=ans.children.length;let i=Math.floor((x-r.left)/r.width*n);i=Math.max(0,Math.min(n-1,i));return ans.children[i]}
+ function end(e){if(!drag||e.pointerId!==drag.id)return;const d=drag;drag=null;d.g.remove();ans.classList.remove('okdrop');
+  if(!d.moved){move(d.i,null);return}
+  const t=slotAt(e.clientX,e.clientY);if(!t){draw();return}if(!move(d.i,+t.dataset.slot))draw()}
+ top.addEventListener('pointerup',end);top.addEventListener('pointercancel',e=>{if(drag){drag.g.remove();drag=null;draw()}});
+
+ /* notebook */
+ function notebook(){const nb=R('nb');nb.innerHTML='';const {a,b,c,d}=S,L=lcm(b,d),A=a*L/b,C=c*L/d,Sm=A+C;
+  const steps=[];
+  steps.push({kind:'guess'});
+  if(b!==L)steps.push({kind:'conv',n:a,d:b,L,ans:A});
+  if(d!==L)steps.push({kind:'conv',n:c,d:d,L,ans:C});
+  steps.push({kind:'sum',A,C,L,ans:Sm});
+  const g=gcd(Sm,L);if(g>1||Sm>=L)steps.push({kind:'simp',S:Sm,L});
+  let idx=1;
+  steps.forEach((s,i)=>{const st=el('div','step'+(i>1?' locked':''));let h='';
+   if(s.kind==='guess')h=`<div class="n">התרגיל (אפשר לנסות ישר, או להתחיל בשלב 1)</div><div class="eq">${F(a,b)}<span class="op">+</span>${F(c,d)}<span class="op">=</span>${fin('gn')}${fin2('gd')}</div>`;
+   else if(s.kind==='conv')h=`<div class="n">שלב ${idx++}: שם משותף – ${plur(s.d)} הופכים ל${plur(s.L)}</div><div class="eq">${F(s.n,s.d)}<span class="op">=</span><span class="fin"><input data-i="n" inputmode="numeric" maxlength="2" aria-label="מונה"><span class="bar"></span><span style="font:700 21px system-ui">${s.L}</span></span></div>`;
+   else if(s.kind==='sum')h=`<div class="n">שלב ${idx++}: סופרים ${plur(s.L)}</div><div class="eq">${F(s.A,s.L)}<span class="op">+</span>${F(s.C,s.L)}<span class="op">=</span><span class="fin"><input data-i="n" inputmode="numeric" maxlength="2" aria-label="מונה"><span class="bar"></span><input data-i="d" inputmode="numeric" maxlength="2" aria-label="מכנה"></span></div>`;
+   else h=`<div class="n">שלב ${idx++}: ${s.S%s.L===0?'כמה שלמים זה?':s.S>s.L?'כמה שלמים ומה נשאר?':'אפשר לכתוב פשוט יותר?'}</div><div class="eq">${F(s.S,s.L)}<span class="op">=</span><input class="nin" data-i="w" inputmode="numeric" maxlength="2" aria-label="שלמים" placeholder="שלם">${s.S%s.L===0?'':`<span class="fin"><input data-i="n" inputmode="numeric" maxlength="2" aria-label="מונה"><span class="bar"></span><input data-i="d" inputmode="numeric" maxlength="2" aria-label="מכנה"></span>`}</div>`;
+   st.innerHTML=h+'<div class="fb"></div><div class="why"></div>';nb.appendChild(st);
+   const get=k=>{const x=st.querySelector(`[data-i="${k}"]`);return x?num(x.value):null};
+   const fb=st.querySelector('.fb'),why=st.querySelector('.why');
+   const mark=(ok,t,w='')=>{st.querySelectorAll('input').forEach(x=>{x.classList.remove('ok','bad');if(x.value!==''||ok)x.classList.add(ok?'ok':'bad')});fb.className='fb '+(ok?'ok':'bad');fb.innerHTML=t;why.innerHTML=w};
+   const clear=()=>{st.querySelectorAll('input').forEach(x=>x.classList.remove('ok','bad'));fb.className='fb';fb.innerHTML='';why.innerHTML=''};
+   const unlock=()=>{const nx=st.nextElementSibling;if(nx)nx.classList.remove('locked')};
+   st.addEventListener('input',()=>{
+    if(s.kind==='guess'){const n=get('n'),dd=get('d');if(n==null||!dd){clear();return}
+     if(n*L===Sm*dd){mark(true,`✓ נכון! עכשיו בואו נראה <b>למה</b>, שלב אחרי שלב (ועל הרצועות למעלה).`);R('cmp').innerHTML='';unlock();return}
+     const wrong=n===a+c&&dd===b+d;mark(false,wrong?`חיברת גם את המונים וגם את המכנים. בדקו את הרצועה האדומה למטה 👇`:`עוד לא. הנה איך זה נראה ליד התשובה האמיתית 👇 – ואפשר לעבור לשלבים.`);compare(n,dd,wrong);unlock();return}
+    if(s.kind==='conv'){const n=get('n');if(n==null){clear();return}
+     if(n===s.ans){mark(true,`✓ ${words(s.n,s.d)} = ${words(n,s.L)}`,`חותכים כל ${sing(s.d)} ל־${s.L/s.d} – יש פי ${s.L/s.d} חלקים, אז גם המונה כפול ${s.L/s.d}. (נסו: ברצועה ${s.d===b?'העליונה':'התחתונה'} לחצו "${s.L/s.d}".)`);unlock()}
+     else mark(false,n===s.n+(s.L-s.d)?`לא מוסיפים ${s.L-s.d} – <b>חותכים</b>. כל ${sing(s.d)} נהיה ${s.L/s.d} ${plur(s.L)}.`:`רמז: כמה ${plur(s.L)} יש ב${sing(s.d)} אחד? ${B(`(${s.L} ÷ ${s.d})`)} ואז כפול ${s.n}.`);return}
+    if(s.kind==='sum'){const n=get('n'),dd=get('d');if(n==null&&dd==null){clear();return}
+     if(dd!=null&&dd===2*s.L){mark(false,`אל תחברו את המכנים! המכנה הוא <b>שם היחידה</b>. ${plur(s.L)} ועוד ${plur(s.L)} נשארות ${plur(s.L)} – הרצועה לא נחתכת לחתיכות קטנות יותר רק כי חיברנו.`);if(n!=null)compare(n,dd,false,true);return}
+     if(dd!=null&&dd!==s.L){mark(false,`המכנה צריך להישאר שם היחידה: ${plur(s.L)}, כלומר ${s.L}.`);return}
+     if(n==null||dd==null){fb.className='fb';fb.innerHTML='';return}
+     if(n===s.ans){mark(true,`✓ ${words(s.A,s.L)} ועוד ${words(s.C,s.L)} = ${words(n,s.L)}`,`כמו 4 תפוחים ועוד 2 תפוחים: סופרים רק את החתיכות, והשם (${plur(s.L)}) לא משתנה.`);R('cmp').innerHTML='';unlock()}
+     else mark(false,`ספרו שוב: ${s.A} ועוד ${s.C} ${plur(s.L)}. (אפשר לספור את החתיכות ברצועת התשובה.)`);return}
+    if(s.kind==='simp'){const w=get('w')||0,n=get('n')||0,dd=get('d');const val=w+(dd?n/dd:0);
+     if(get('w')==null&&get('n')==null){clear();return}
+     const ok=Math.abs(val-s.S/s.L)<1e-9;
+     if(ok&&(s.S%s.L===0||(n<dd&&gcd(n,dd)===1))){const W2=Math.floor(s.S/s.L);
+      mark(true,s.S%s.L===0?`✓ ${words(s.S,s.L)} = ${W2===1?'שלם אחד':W2+' שלמים'}! בשלם אחד יש בדיוק ${s.L} ${plur(s.L)}.`:`✓ מצוין.`);R('cmp').innerHTML=''}
+     else if(ok)mark(false,`זה שווה, אבל אפשר לכתוב פשוט יותר. ${n>=(dd||1)?'יש כאן עוד שלם שלם – העבירו אותו לתיבת השלם.':'נסו לחלק את המונה והמכנה באותו מספר.'}`);
+     else if(dd)mark(false,`לא בדיוק. בשלם אחד יש ${s.L} ${plur(s.L)}. כמה שלמים יוצאים מ־${s.S}, ומה נשאר?`)}
+   })});}
+ function fin(){return `<span class="fin"><input data-i="n" inputmode="numeric" maxlength="2" aria-label="מונה"><span class="bar"></span>`}
+ function fin2(){return `<input data-i="d" inputmode="numeric" maxlength="2" aria-label="מכנה"></span>`}
+ /* mistake comparison: the true sum vs. what was typed */
+ function compare(n,dd,isClassic,denMistake){const box=R('cmp');const {a,b,c,d}=S;const V=a/b+c/d,v=n/dd;
+  if(!dd||dd>36||v>2){box.innerHTML='';return}
+  const W=Math.max(1,Math.ceil(Math.max(V,v)-1e-9));
+  const combo=`<div class="combo" style="width:100%">`+Array.from({length:a},()=>`<div style="width:${100/(b*W)}%;background:var(--a)"></div>`).join('')+Array.from({length:c},()=>`<div style="width:${100/(d*W)}%;background:var(--b)"></div>`).join('')+`<div style="flex:1"></div></div>`;
+  box.innerHTML=`<div class="slabel"><span><bdi dir="ltr">${a}/${b} + ${c}/${d}</bdi> באמת נראה כך</span></div>${combo}
+   <div class="slabel" style="margin-top:8px"><span>מה שכתבת</span><b>${F(n,dd)}</b></div><div class="strip short" data-r="wr"></div><svg class="nl" viewBox="0 0 500 92"></svg><div class="why"></div>`;
+  const wr=box.querySelector('[data-r=wr]');renderStrip(wr,Array.from({length:W*dd},(_,i)=>i<n?'W':''),dd);
+  numberLine(box.querySelector('svg'),W,[],[{v:V,label:'הסכום',col:'#1d7368'},{v,label:`${n}/${dd}`,col:'#d9534f'}]);
+  const big=Math.max(a/b,c/d),bigF=a/b>=c/d?`${a}/${b}`:`${c}/${d}`;
+  let t=v<V?`האדום קצר יותר – ${B(n+'/'+dd)} <b>קטן</b> מהסכום האמיתי.`:`האדום ארוך יותר – ${B(n+'/'+dd)} <b>גדול</b> מהסכום האמיתי.`;
+  if(v<big)t+=` ואפילו קטן מ־${B(bigF)} לבד! איך יכול להיות שהוספנו משהו ויצא פחות?`;
+  if(isClassic)t+=` כשמחברים ${B(b)} ו־${B(d)} למטה, החתיכות נהיות קטנות יותר (${plur(b+d)}) – אבל חיבור לא חותך את הרצועה. מחברים רק יחידות עם אותו שם.`;
+  if(denMistake)t+=` המכנה נשאר ${lcm(b,d)}.`;
+  box.querySelector('.why').innerHTML=t}
+ return {load,get state(){return S},set cuts(v){cuts=v}};
+}
+
+/* ---- Add tab ---- */
+const PROBS=[[1,5,4,5],[1,3,4,6],[1,2,1,4],[2,3,1,4],[3,4,1,2]];
+const add=AddView($('#addRoot'),{});
+let curP=1;
+function addChips(){const c=$('#addProbs');c.innerHTML='';PROBS.forEach((p,i)=>{const b=el('button','chip',`${p[0]}/${p[1]} + ${p[2]}/${p[3]}`);b.setAttribute('aria-pressed',i===curP);b.onclick=()=>{curP=i;addChips();add.load(...p)};c.appendChild(b)})}
+addChips();add.load(...PROBS[curP]);
+
+/* ---- Sandbox ---- */
+const SB={v:[1,2,1,3]};const DENS=[2,3,4,5,6,8,9,10,12];
+const sbv=AddView($('#sbRoot'),{cuts:[2,3,4,5]});
+function okCombo([a,b,c,d]){const L=lcm(b,d);const f=x=>{while(x%2===0)x/=2;while(x%3===0)x/=3;while(x%5===0)x/=5;return x===1};
+ const W=Math.max(1,Math.ceil(a/b+c/d-1e-9));return a>=1&&a<=b&&c>=1&&c<=d&&L<=24&&L*W<=36&&f(L/b)&&f(L/d)}
+function sbPick(){const p=$('#sbPick');p.innerHTML='';const mk=(i)=>{const s=el('div','stepper');const up=el('button','btn','+'),dn=el('button','btn','−'),o=el('output','',String(SB.v[i]));
+  up.onclick=()=>step(i,1);dn.onclick=()=>step(i,-1);s.append(up,o,dn);return s};
+ const fr=(i)=>{const f=el('div','sbfr');f.append(mk(i),el('div','ln'),mk(i+1));return f};
+ p.append(fr(0),el('div','','<span style="font:700 26px system-ui">+</span>'),fr(2))}
+function step(i,dir){const v=SB.v.slice();if(i%2){let k=DENS.indexOf(v[i]);k=Math.max(0,Math.min(DENS.length-1,k+dir));v[i]=DENS[k];if(v[i-1]>v[i])v[i-1]=v[i]}else{v[i]=Math.max(1,Math.min(v[i+1],v[i]+dir))}
+ SB.v=v;sbPick();const ok=okCombo(v);$('#sbMsg').className='hint'+(ok?'':' warn');$('#sbMsg').innerHTML=ok?'':'עם המכנים האלה החתיכות יוצאות קטנות מדי לגרירה. נסו מכנים אחרים.';$('#sbGo').disabled=!ok}
+$('#sbRand').onclick=()=>{let v;for(;;){const b=DENS[Math.floor(Math.random()*6)],d=DENS[Math.floor(Math.random()*7)];v=[1+Math.floor(Math.random()*(b-1)),b,1+Math.floor(Math.random()*(d-1)),d];if(okCombo(v))break}SB.v=v;sbPick();$('#sbMsg').innerHTML='';$('#sbGo').disabled=false;sbv.load(...v)};
+$('#sbGo').onclick=()=>{if(okCombo(SB.v))sbv.load(...SB.v)};
+sbPick();sbv.load(...SB.v);
+
+/* ---- tabs ---- */
+const EVN={eq:'open-equivalent',add:'open-add',sb:'open-sandbox'};
+function tab(v){document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-selected',b.dataset.v===v));document.querySelectorAll('section.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));Stats.ev(EVN[v]);scrollTo(0,0)}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>tab(b.dataset.v));
+eqBuildTargets();eqCut(1,true);eqNotebook();
+const h=location.hash.slice(1);tab(EVN[h]?h:'eq');
+window.MP={add,sbv,EQ};
+</script>
+</body>
+</html>
